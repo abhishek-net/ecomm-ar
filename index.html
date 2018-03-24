@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Face Detection</title>
+  <link rel="stylesheet" href="assets/demo.css">
+
+  <script src="../build/tracking.js"></script>
+  <script src="../build/data/face-min.js"></script>
+  <script src="..//build/data/eye-min.js"></script>
+  <script src="..//build/data/mouth-min.js"></script>
+  <style>
+    video,
+    canvas {
+      margin-left: 230px;
+      margin-top: 120px;
+      position: absolute;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="demo-title">
+    <p>Get user's webcam and detect face, eye and mouth</p>
+  </div>
+
+  <div class="">
+    <div class="">
+      <video id="video" width="320" height="240" preload autoplay loop muted></video>
+      <canvas id="eyeCanvas" width="320" height="240"></canvas>
+      <canvas id="mouthCanvas" width="320" height="240"></canvas>
+      <canvas id="faceCanvas" width="320" height="240"></canvas>
+
+    </div>
+  </div>
+
+  <ul id="result">
+
+  </ul>
+
+  <script>
+    var drawTrackingMarkers = function (event, context, strokeStyle) {
+      if (event.data.length > 0) {
+        event.data.forEach(function (rect) {
+          context.clearRect(0, 0, 320, 240);
+          context.strokeStyle = strokeStyle;
+          context.strokeRect(rect.x, rect.y, rect.width, rect.height);
+          context.font = '11px Helvetica';
+          context.fillStyle = "#fff";
+          context.fillText('x: ' + rect.x + 'px', rect.x + rect.width + 5, rect.y + 10);
+          context.fillText('y:' + rect.y + 'px ', rect.x + rect.width + 5, rect.y + 25);
+        });
+      }
+
+    };
+    window.onload = function () {
+      var video = document.getElementById('video');
+      var eyeContext = document.getElementById('eyeCanvas').getContext('2d');
+      var mouthContext = document.getElementById('mouthCanvas').getContext('2d');;
+      var faceContext = document.getElementById('faceCanvas').getContext('2d');;
+
+      var mouthTracker = new tracking.ObjectTracker('mouth');
+      var eyeTracker = new tracking.ObjectTracker('eye');
+      var faceTracker = new tracking.ObjectTracker('face');
+      var objects = new tracking.ObjectTracker(['face', 'eye', 'mouth']);
+
+      mouthTracker.on('track', function (event) {
+        drawTrackingMarkers(event, mouthContext, 'green');
+      });
+      var counter = 0;
+      eyeTracker.on('track', function (event) {
+        drawTrackingMarkers(event, eyeContext, 'red');
+      });
+      faceTracker.on('track', function (event) {
+        drawTrackingMarkers(event, faceContext, 'yellow');
+      });
+      tracking.track('#video', faceTracker, {
+        camera: true
+      });
+      tracking.track('#video', eyeTracker, {
+        camera: true
+      });
+      tracking.track('#video', mouthTracker, {
+        camera: true
+      });
+    };
+
+  </script>
+
+</body>
+
+</html>
